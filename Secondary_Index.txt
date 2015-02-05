@@ -1,0 +1,50 @@
+Listing #	Type		Duplicates	
+0		Print		11	
+
+1		Print		0	
+
+2		Print		0	
+
+3		Print		0	
+
+4		Print		0	
+
+5		Print		0	
+
+6		Print		0	
+
+7		Print		0	
+
+8		Print		0	
+
+9		Print		0	
+
+10		Print		0	
+
+11		Print		0	
+
+12		Print		0	
+
+13		Print		0	
+
+14		Print		0	
+
+15		Print		0	
+
+16		Print		0	
+
+17		Print		0	
+
+18		Print		0	
+
+19		Print		0	
+
+20		Print		0	
+
+21		Print		0	
+
+22		Print		0	
+
+23		Print		0	
+
+24		Print		0	
