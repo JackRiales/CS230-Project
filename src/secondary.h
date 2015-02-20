@@ -22,6 +22,8 @@
 
 #include "binary.h"
 
+#define _DEBUG_
+
 class SecondaryIndex
 {
     public:
@@ -68,14 +70,13 @@ class SecondaryIndex
             Performed at start.
         */
 
-        bool type_match (std::string type, int position[]);
+        bool type_match (std::string type);
         /**
             \name Type Match
             \brief Returns if the type was found at the given position
             \return True type was found
             \return False type was not found
             \param Type type to search for
-            \param Position position to search at (?)
         */
 
         static const unsigned int TAG_BUFFER     = 11;
@@ -93,7 +94,7 @@ class SecondaryIndex
     private:
         struct {                                    /// Anonymous struct used to house index
             std::string _type;                      /// Type name from the "BinaryData" class
-            int         _tag[TAG_BUFFER];           /// How many duplicates of the type there are
+            int         _duplicates;                /// How many duplicates of the type there are
         }               _listing[LISTING_BUFFER];   /// Array with arbitrary buffer defines index
         int             _count;                     /// How many actual entries are there?
 };
