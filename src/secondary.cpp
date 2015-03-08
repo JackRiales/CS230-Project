@@ -11,7 +11,7 @@ SecondaryIndex::SecondaryIndex(int count):
 _count (count)
 {
     #ifdef _DEBUG_
-    printf("Instantiating a new secondary index with count value %d", count);
+    printf("Instantiating a new secondary index with count value %d\n", count);
     #endif
 
     // Iterate and instantiate with default values
@@ -33,7 +33,7 @@ bool SecondaryIndex::set_type_at(unsigned int key, std::string type)
     if (key >= LISTING_BUFFER)
     {
         #ifdef _DEBUG_
-        printf("Error! Given key exceeds index buffer range of primary index.");
+        printf("Error! Given key exceeds index buffer range of primary index.\n");
         #endif
 
         return false;

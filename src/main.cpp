@@ -3,68 +3,187 @@
     John "Jack" Riales, CSC230. J00515647
 */
 
+#include <iostream>
 #include "binary.h"
 #include "primary.h"
 #include "secondary.h"
 using namespace std;
 
+// Global constants
+const std::string bin_filename = "binary_file.bin";
+const std::string prime_index_filename = "primary_index.txt";
+const std::string second_index_filename = "secondary_index.txt";
+
+// Global main functions
+bool binaryFileExists();                                // Has the binary file already been created?
+bool userPrompt_bulkBuild();                            // Prompts the user to perform the bulk build (0) or to enter the menu program (1).
+bool performBulkBuild(std::string input_filename);      // Gives the first prompt and allows the user to perform the bulk build if they want.
+int  binaryMenu();                                      // Main switch that gives access to front end functions, such as adding and deleting
+
+// ========================================================= // MAIN
+
 int main (int argc, char** argv)
 {
-    // Testing, only if debug has been declared inside binary.h
-    #define _DEBUG_
-    #ifdef _DEBUG_
-    // #define _TEST_1_
-    // #define _TEST_2_
-    // #define _TEST_3_
-    #define _TEST_4_
+    // Start by asking if the user wants to rebuild the binary file, or go to the menu
+    if (!userPrompt_bulkBuild()) {
+        // Ask what the input filename is
+        std::string input_filename;
+        cout << "Please enter the input file name: ";
+        cin  >> input_filename;
 
-    #ifdef _TEST_4_
-    // Parsing works! Now let's integrate the primary index.
-    // We need multiple binary objects. Use one for each line in input.txt -- this time 12!
-    BinaryData obj[12];
-    PrimaryIndex index;
-    SecondaryIndex sindex;
+        // Build the file and the indexes.
+        if (!performBulkBuild(input_filename))
+            return 0;
 
-    std::fstream test_in ("input.txt", ios::in);
+        // Ask to go to menu
+        char goto_menu;
+        cout << "Go to menu? (y/n): ";
+        cin  >> goto_menu;
+        switch (goto_menu) {
+        case 'y':
+            return binaryMenu();
+        case 'Y':
+            return binaryMenu();
+        default:
+            cout << "Exiting.";
+            return 0;
+        }
+    }
+    else {
+        if (binaryFileExists())
+            return binaryMenu();
+        else
+            cout << "Binary file nonexistant. Exiting.";
+    }
+    return 0;
+}
 
-    // Iterate through the object array and parse each
-    for (int i = 0; i < 12; i++)
-    {
-        // Set values
-        obj[i].read_sequential(test_in, i);
+// ========================================================= //
+
+bool binaryFileExists()
+{
+    // Do a quick open of the file we're looking for (binary_file.bin, in this case) and check if it's good
+    ifstream in(bin_filename.c_str());
+    if (in.good()) {
+        in.close();
+        return true;
+    }
+    else {
+        in.close();
+        return false;
+    }
+}
+
+// ========================================================= //
+
+bool userPrompt_bulkBuild()
+{
+    int result;
+    cout << "Please enter (0) to perform the bulk build, or enter (1) to enter the menu program: ";
+    cin  >> result;
+    switch (result) {
+    case 0:
+        char confirmation;
+        cout << "Are you sure you wish to rebuild the binary file? (y/n): ";
+        cin  >> confirmation;
+        switch (confirmation) {
+        case 'y':
+            return 0;
+        case 'Y':
+            return 0;
+        case 'n':
+            cout << "Confirmation returned 'n'. Entering menu program.\n";
+            return 1;
+        case 'N':
+            cout << "Confirmation returned 'n'. Entering menu program.\n";
+            return 1;
+        default:
+            cout << "Confirmation input invalid. Entering menu program.\n";
+        }
+    case 1:
+        cout << "Entering menu program.\n";
+        return 1;
+    default:
+        cout << "Unknown case. Entering default input (1).\n";
+        return 1;
+    }
+}
+
+// ========================================================= //
+
+bool performBulkBuild(std::string input_filename)
+{
+    // Create an array of data objects as large as the buffer located in the PrimaryIndex class
+    unsigned int buffer = PrimaryIndex::LISTING_BUFFER - 1;
+    BinaryData obj [buffer];
+
+    // Create the indexes
+    PrimaryIndex prime_index;
+    SecondaryIndex second_index;
+
+    // Open the stream to the input file
+    std::fstream in (input_filename.c_str(), ios::in);
+    if (in.good()) {
+        cout << "Reading input file.\n";
+
+        // Read each line onto each object
+        for (unsigned int i = 0; i < buffer; i++) {
+            obj[i].read_sequential(in, i);
+        }
+    }
+    else {
+        cout << "Input file nonexistant. Exiting bulk build.\n";
+        return false;
     }
 
-    // We don't need input anymore
-    test_in.close();
+    // Close the input stream
+    in.close();
 
-    std::fstream test_out ("testing.bin", ios::out | ios::binary);
-    for (int i = 0; i < 12; i++)
-    {
-        // Push to the binary file at position i
-        obj[i].write (test_out, i);
+    // Create the output stream
+    std::fstream out (bin_filename.c_str(), ios::out | ios::binary);
+    if (out.good()) {
+        cout << "Writing binary file.\n";
+
+        // Write out the binary file
+        for (unsigned int i = 0; i < buffer; i++) {
+            obj[i].write (out, i);
+        }
     }
 
-    // Dont need this anymore
-    test_out.close();
+    // Close output
+    out.close();
 
-    // But now we have this primary index. Have it read our array. Generally this will be done after
-    // we re-import our array of binary data objects.
-    index.read (obj, 12);
-    sindex.read (obj, 12);
+    // Read in the indexes from the object array
+    cout << "Reading objects for index creation.\n";
+    prime_index.read(obj, buffer);
+    second_index.read(obj, buffer);
 
-    std::fstream seq_out ("Primary_Index.txt", ios::out);
-    std::fstream sseq_out ("Secondary_Index.txt", ios::out);
+    // Open output streams to write out the files
+    std::fstream    prime_out (prime_index_filename.c_str(), ios::out);
+    std::fstream    second_out (second_index_filename.c_str(), ios::out);
 
-    // Finally, let's write our primary index through the sequential output stream
-    index.write (seq_out);
-    sindex.write(sseq_out);
+    if (prime_out.good() && second_out.good()) {
+        cout << "Writing indexes.\n";
 
-    // Close it
-    seq_out.close();
-    #endif
+        // Write the indexes
+        prime_index.write(prime_out);
+        second_index.write(second_out);
 
-    #else // _DEBUG_
-    printf ("No tests performed. _DEBUG_ macro flag is undefined.");
-    #endif // _DEBUG_
+        // Close the streams
+        prime_out.close();
+        second_out.close();
+
+        return true;
+    }
+    else {
+        cout << "Index streams could not be opened. Exiting.";
+        return false;
+    }
+}
+
+// ========================================================= //
+
+int binaryMenu()
+{
     return 0;
 }

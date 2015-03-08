@@ -20,6 +20,8 @@
 
 #include "binary.h"
 
+#define _DEBUG_
+
 class PrimaryIndex
 {
     public:

@@ -27,12 +27,13 @@
     and is generally unpleasant, I find. Helps me, though.
     Uncomment at your own risk.
 */
-// #define _DEBUG_
+#define _DEBUG_
 
 #include <stdio.h>
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <stdlib.h>
 
 class BinaryData
 {
