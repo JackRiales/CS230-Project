@@ -4,6 +4,7 @@
 */
 
 #include <iostream>
+#include <cctype>
 #include "binary.h"
 #include "primary.h"
 #include "secondary.h"
@@ -13,6 +14,7 @@ using namespace std;
 const std::string bin_filename = "binary_file.bin";
 const std::string prime_index_filename = "primary_index.txt";
 const std::string second_index_filename = "secondary_index.txt";
+const std::string program_header = "University of South Alabama -- CS230 -- Program 1\nJohn \"Jack\" Riales, J00515647\n============\n\n";
 
 // Global main functions
 bool binaryFileExists();                                // Has the binary file already been created?
@@ -20,10 +22,12 @@ bool userPrompt_bulkBuild();                            // Prompts the user to p
 bool performBulkBuild(std::string input_filename);      // Gives the first prompt and allows the user to perform the bulk build if they want.
 int  binaryMenu();                                      // Main switch that gives access to front end functions, such as adding and deleting
 
-// ========================================================= // MAIN
+// ========================================================= //
 
 int main (int argc, char** argv)
 {
+    cout << program_header;
+
     // Start by asking if the user wants to rebuild the binary file, or go to the menu
     if (!userPrompt_bulkBuild()) {
         // Ask what the input filename is
@@ -183,7 +187,118 @@ bool performBulkBuild(std::string input_filename)
 
 // ========================================================= //
 
+// == Used for the help display
+const int possible_inputs = 6;
+
+const char input_list[] = {
+    'a',    // Add record
+    'c',    // Change record
+    'd',    // Delete record
+    'w',    // Write record
+    'q',    // Quit menu
+    'h'     // Display help
+};
+
+const std::string help_display_strings[] = {
+    "Add a record to the database.",
+    "Change an existing record.",
+    "Delete a record from the database.",
+    "Commit and write the changes to the binary file and the indexes.",
+    "Quit the program.",
+    "Display this help message."
+};
+// ==
+
+// Global menu functions
+void addRecord();
+void changeRecord();
+void deleteRecord();
+void write();
+void quit();
+void help();
+
+// Running flag
+bool running = true;
+
 int binaryMenu()
 {
+    char input;
+
+    while (running){
+        cout << "Enter a command or type 'h' for a list of commands.\n> ";
+        cin  >> input;
+
+        // If input is upper case, make sure it's lower case
+        if (isupper(input))
+            input = char(tolower(input));
+
+        switch (input) {
+        case 'h':
+            help();
+            break;
+        case 'q':
+            quit();
+            break;
+        case 'w':
+            write();
+            break;
+        case 'd':
+            deleteRecord();
+            break;
+        case 'c':
+            changeRecord();
+            break;
+        case 'a':
+            addRecord();
+            break;
+        }
+    }
+
     return 0;
+}
+
+void addRecord()
+{
+
+}
+
+void changeRecord()
+{
+
+}
+
+void deleteRecord()
+{
+
+}
+
+void write()
+{
+    // Prompt the user for confirmation
+    char confirm;
+    cout << "Are you sure you wish to commit and write the changes? (y/n): ";
+    cin  >> confirm;
+
+    // Change to lower case...
+    if (isupper(confirm))
+        confirm = char(tolower(confirm));
+
+    switch (confirm) {
+    case 'y':
+        // Do it
+    default:
+        cout << "Changes will not be committed. Returning.\n";
+    }
+}
+
+void quit()
+{
+    cout << "Quitting menu program...\n";
+    running = false;
+}
+
+void help()
+{
+    for (int i = 0; i < possible_inputs; i++)
+        cout << input_list[i] << "\t" << help_display_strings[i] << endl;
 }
