@@ -3,25 +3,7 @@
     John "Jack" Riales, CSC230. J00515647
 */
 
-#include <iostream>
-#include <cctype>
-#include "binary.h"
-#include "primary.h"
-#include "secondary.h"
-using namespace std;
-
-// Global constants
-const std::string bin_filename = "binary_file.bin";
-const std::string prime_index_filename = "primary_index.txt";
-const std::string second_index_filename = "secondary_index.txt";
-const std::string program_header = "University of South Alabama -- CS230 -- Program 1\nJohn \"Jack\" Riales, J00515647\n============\n\n";
-
-// Global main functions
-bool binaryFileExists();                                // Has the binary file already been created?
-bool userPrompt_bulkBuild();                            // Prompts the user to perform the bulk build (0) or to enter the menu program (1).
-bool userPrompt_Confirmation(bool def, std::string message); // Prompts the user for 'y' or 'n', and returns true or false respectively. Default will be the return for invalid input.
-bool performBulkBuild(std::string input_filename);      // Gives the first prompt and allows the user to perform the bulk build if they want.
-int  binaryMenu();                                      // Main switch that gives access to front end functions, such as adding and deleting
+#include "main.h"
 
 // ========================================================= //
 
@@ -192,48 +174,6 @@ bool performBulkBuild(std::string input_filename)
 
 // ========================================================= //
 
-// == Used for the help display
-const int possible_inputs = 7;
-
-const char input_list[] = {
-	'a',    // Add record
-	'c',    // Change record
-	'd',    // Delete record
-	'w',    // Write record
-	'q',    // Quit menu
-	'h',    // Display help
-	'l'     // List data
-};
-
-const std::string help_display_strings[] = {
-	"Add a record to the database.",
-	"Change an existing record.",
-	"Delete a record from the database.",
-	"Commit and write the changes to the binary file and the indexes.",
-	"Quit the program.",
-	"Display this help message.",
-	"List all valid data"
-};
-// ==
-
-// Menu functions
-bool addRecord(BinaryData *obj);
-bool changeRecord(BinaryData *obj);
-bool deleteRecord(BinaryData *obj);
-void write(BinaryData obj[], PrimaryIndex prime_index, SecondaryIndex second_index);
-void quit();
-void help();
-void listData(BinaryData obj[]);
-
-// These are used by the menu functions
-BinaryData recordPrompt();
-
-// Running flag
-bool running = true;
-
-// Binary data array buffer
-int buffer = PrimaryIndex::LISTING_BUFFER - 1;
-
 int binaryMenu()
 {
     // Reset cin, in case the doofus at the keyboard put in a char for the bulk build/menu input.
@@ -289,6 +229,9 @@ int binaryMenu()
         case 'l':
             listData(objects);
             break;
+        case 'p':
+            print(objects, prime_index, second_index);
+            break;
         default:
             cout << "Invalid command. Displaying help.\n\n";
             help();
@@ -297,6 +240,8 @@ int binaryMenu()
 
 	return 0;
 }
+
+// ========================================================= //
 
 bool addRecord(BinaryData *obj)
 {
@@ -337,6 +282,8 @@ bool addRecord(BinaryData *obj)
     return true;
 }
 
+// ========================================================= //
+
 bool changeRecord(BinaryData *obj)
 {
     int input;
@@ -369,6 +316,8 @@ bool changeRecord(BinaryData *obj)
 
     return true;
 }
+
+// ========================================================= //
 
 bool deleteRecord(BinaryData *obj)
 {
@@ -404,7 +353,9 @@ bool deleteRecord(BinaryData *obj)
     return true;
 }
 
-void write(BinaryData obj[], PrimaryIndex prime_index, SecondaryIndex second_index)
+// ========================================================= //
+
+void write(BinaryData obj[], PrimaryIndex& prime_index, SecondaryIndex& second_index)
 {
     fstream bin_out (bin_filename, ios::out | ios::binary);
     fstream prime_out (prime_index_filename, ios::out);
@@ -433,17 +384,23 @@ void write(BinaryData obj[], PrimaryIndex prime_index, SecondaryIndex second_ind
     second_out.close();
 }
 
+// ========================================================= //
+
 void quit()
 {
 	cout << "Quitting menu program...\n";
 	running = false;
 }
 
+// ========================================================= //
+
 void help()
 {
 	for (int i = 0; i < possible_inputs; i++)
 		cout << input_list[i] << "\t" << help_display_strings[i] << endl;
 }
+
+// ========================================================= //
 
 void listData(BinaryData obj[])
 {
@@ -452,6 +409,40 @@ void listData(BinaryData obj[])
             cout << i << ") " << obj[i].to_string() << endl;
     }
 }
+
+// ========================================================= //
+
+void print(BinaryData *obj, PrimaryIndex prime_index, SecondaryIndex second_index)
+{
+    int selection;
+    cout << "Enter a print method. (0) for \"By Title\" or (1) for \"By Type\": ";
+    cin  >> selection;
+
+    if (cin.fail()) {
+        cout << "Invalid input. Returning.\n";
+        return;
+    }
+    else {
+        BinaryData result;
+        switch (selection) {
+        case 0:
+            result = getByTitle(obj);
+            break;
+        case 1:
+            result = getByType(obj);
+            break;
+        default:
+            cout << "Invalid input. Returning.\n";
+        }
+
+        if (result.title() != "0")
+            cout << result.to_string() << endl;
+        else
+            cout << "Result returned null.\n";
+    }
+}
+
+// ========================================================= //
 
 BinaryData recordPrompt()
 {
@@ -473,4 +464,108 @@ BinaryData recordPrompt()
 
     BinaryData result(title, artist, type, year, price, count);
     return result;
+}
+
+// ========================================================= //
+
+BinaryData getByTitle(BinaryData *obj)
+{
+    // Get a title
+    string input;
+    cout << "Enter a title to search for: ";
+    cin  >> input;
+
+    // Invalid input type exception
+    if (cin.fail()) {
+        cout << "Invalid input.\n";
+
+        // Return new null binary data
+        return *(new BinaryData);
+    }
+    else {
+        // Convert it to lower case
+        input = toLowerCase(input);
+
+        // Perform linear search and get it
+        for (int i = 0; i < buffer; i++) {
+            if (toLowerCase(obj[i].title()) == input)
+                return obj[i];
+        }
+    }
+    return *(new BinaryData);
+}
+
+// ========================================================= //
+
+BinaryData getByType(BinaryData *obj)
+{
+    string input;
+    cout << "Enter a type to search for: ";
+    cin  >> input;
+
+    // Invalid input type exception
+    if (cin.fail()) {
+        cout << "Invalid input.\n";
+        return *(new BinaryData);
+    }
+    else {
+        // How many duplicates of the type are there
+        int dupes = 0;
+
+        // Array of the found objects
+        BinaryData found[buffer];
+        int currentIndex = 0;
+
+        // Convert to lower case
+        input = toLowerCase(input);
+
+        // Linear search
+        for (int i = 0; i < buffer; i++) {
+            if (toLowerCase(obj[i].type()) == input) {
+                found[currentIndex] = obj[i];
+                currentIndex++;
+                dupes++;
+            }
+        }
+
+        // If there's just one of them, return it
+        if (dupes == 1)
+            return found[currentIndex -1];
+        else {
+            // Allow them to search among the duplicates by title
+            if (userPrompt_Confirmation(false, "Duplicates found. Search the duplicates by title? (n) for more options."))
+                return getByTitle(found);
+            else {
+                // Or just allow them to print all the duplicates and return a null bin object
+                if (userPrompt_Confirmation(false, "Print all duplicates?")) {
+                    for (int i = 0; i < buffer; i++) {
+                        // Print all valid entries in the duplicates buffer
+                        if (found[i].title() != "0")
+                            cout << found[i].to_string() << endl;
+                    }
+                }
+            }
+        }
+    }
+
+    return *(new BinaryData);
+}
+
+// ========================================================= //
+
+std::string toLowerCase(std::string str)
+{
+    std::string destinationString;
+
+    // Allocate the destination space
+    destinationString.resize(str.size());
+
+    // Convert the source string to lower case
+    // storing the result in destination string
+    std::transform(str.begin(),
+                    str.end(),
+                    destinationString.begin(),
+                    ::tolower);
+
+    return destinationString;
 }
