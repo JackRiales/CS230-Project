@@ -177,7 +177,8 @@ bool performBulkBuild(std::string input_filename)
 int binaryMenu()
 {
     // Reset cin, in case the doofus at the keyboard put in a char for the bulk build/menu input.
-    cin.clear();
+    // Ignore until new line is read. Just so no infinite loops happen...
+    cin.ignore(numeric_limits<streamsize>::max(),'\n');
 
     // Read back in the binary file
     fstream in (bin_filename, ios::in | ios::binary);
@@ -455,12 +456,34 @@ BinaryData recordPrompt()
     cin  >> artist;
     cout << "Enter a type: ";
     cin  >> type;
+
     cout << "Enter a year: ";
     cin  >> year;
+    while(cin.fail()){
+        cin.clear();
+        cin.ignore(1024, '\n');
+        cout << "Failed: Integer only. Enter a year: ";
+        cin  >> year;
+    }
+
     cout << "Enter a price: ";
     cin  >> price;
+    while(cin.fail()){
+        cin.clear();
+        cin.ignore(1024, '\n');
+        cout << "Failed: Integer only. Enter a price: ";
+        cin  >> price;
+    }
+
     cout << "Enter count: ";
     cin  >> count;
+    while(cin.fail()){
+        cin.clear();
+        cin.ignore(1024, '\n');
+        cout << "Failed: Integer only. Enter a count: ";
+        cin  >> count;
+    }
+
 
     BinaryData result(title, artist, type, year, price, count);
     return result;

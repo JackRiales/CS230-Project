@@ -2,5 +2,7 @@
 *.cbp
 *.depend
 *.layout
+*.txt
+*.bin
 bin/
 obj/
