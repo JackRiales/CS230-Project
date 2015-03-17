@@ -152,12 +152,12 @@ int BinaryData::value (fstream& inout)
 string BinaryData::to_string()
 {
     return
-        string(title()) + "    " +
-        string(artist()) + "    " +
-        string(type()) + "    " +
-        typeToString<int>(year()) + "    " +
-        "$" + typeToString<int>(price()) + "    " +
-        typeToString(count());
+        "\tTitle:\t" + string(title()) + "    " + "\n" +
+        "\tArtist:\t" + string(artist()) + "    " + "\n" +
+        "\tType:\t" + string(type()) + "    " + "\n" +
+        "\tYear:\t" + typeToString<int>(year()) + "    " + "\n" +
+        "\tPrice:\t" + "$" + typeToString<int>(price()) + "    " + "\n" +
+        "\tCount:\t" + typeToString(count());
 }
 
 ostream& operator<<(ostream& out, const BinaryData& obj)

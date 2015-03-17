@@ -33,6 +33,7 @@ int  binaryMenu();                                              // Main switch t
 bool addRecord(BinaryData *obj);
 bool changeRecord(BinaryData *obj);
 bool deleteRecord(BinaryData *obj);
+bool sellRecord (BinaryData *obj);
 void write(BinaryData obj[], PrimaryIndex& prime_index, SecondaryIndex& second_index);
 void quit();
 void help();
@@ -45,12 +46,13 @@ std::string toLowerCase(std::string str);
 // =====
 
 // ======= Used for the help display
-const int possible_inputs = 8;
+const int possible_inputs = 9;
 
 const char input_list[] = {
 	'a',    // Add record
 	'c',    // Change record
 	'd',    // Delete record
+	's',    // Sell a record
 	'w',    // Write record
 	'q',    // Quit menu
 	'h',    // Display help
@@ -62,6 +64,7 @@ const std::string help_display_strings[] = {
 	"Add a record to the database.",
 	"Change an existing record.",
 	"Delete a record from the database.",
+	"Sell a record",
 	"Commit and write the changes to the binary file and the indexes.",
 	"Quit the program.",
 	"Display this help message.",

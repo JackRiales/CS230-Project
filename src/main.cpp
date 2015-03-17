@@ -221,6 +221,9 @@ int binaryMenu()
 		case 'd':
 			deleteRecord(objects);
 			break;
+        case 's':
+            sellRecord(objects);
+            break;
 		case 'c':
 			changeRecord(objects);
 			break;
@@ -348,6 +351,60 @@ bool deleteRecord(BinaryData *obj)
     else {
         if (!obj[input].is_deleted())
             obj[input] = *(new BinaryData);
+        else
+            cout << "Object already flagged for deletion.\n";
+    }
+    return true;
+}
+
+// ========================================================= //
+
+bool sellRecord(BinaryData *obj)
+{
+    int input;
+    cout << "Choose a record to sell (or -1 to cancel).\n";
+
+    // Iterate and display all valid entries (Title != "0")
+    listData(obj);
+
+    // Take input
+    cout << "Input> ";
+    cin  >> input;
+
+    // Cancel
+    if (input <= -1) {
+        cout << "Canceled. Returning.\n";
+        return true;
+    }
+
+    // Object exceeds buffer
+    else if (input >= buffer) {
+        cout << "Input exceeds buffer. Returning.\n";
+        return false;
+    }
+
+    // Valid entry
+    else {
+        if (!obj[input].is_deleted()) {
+            int amount;
+            cout << "How many of this object are you selling?: ";
+            cin  >> amount;
+            if (amount > obj[input].count()) {
+                if (userPrompt_Confirmation(false, "You don't have that many of that item. Sell all?")) {
+                    obj[input].set_count(0);
+                    return true;
+                } else {
+                    cout << "Exiting.\n";
+                    return false;
+                }
+            } else if (amount <= 0) {
+                cout << "Amount invalid. Exiting.\n";
+                return false;
+            } else {
+                obj[input].set_count(obj[input].count() - amount);
+                return true;
+            }
+        }
         else
             cout << "Object already flagged for deletion.\n";
     }
