@@ -1,6 +1,6 @@
 /*
     Secondary Index Class Header file
-    John "Jack" Riales, CSC230, J00515747
+    John "Jack" Riales, CSC230, J00515647
 
     Class will keep track of values ("types" section), counting
     duplicate values, of the relative file, and print it through
@@ -15,12 +15,14 @@
             Standard IO
             STL String
             File Stream
+        String Utilities
 */
 
 #ifndef SECONDARY_H
 #define SECONDARY_H
 
 #include "binary.h"
+#include "stringutils.h"
 
 //#define _DEBUG_
 
@@ -77,6 +79,24 @@ class SecondaryIndex
 		    \return True type was found
 		    \return False type was not found
 		    \param Type type to search for
+		*/
+
+		int duplicates_of (std::string type);
+		/**
+            \name Duplicates Of
+            \brief Returns the number of duplicates of the given type, or 0 if not found
+		*/
+
+		std::string typeAt (unsigned int index);
+		/**
+            \name Type At
+            \brief Returns the type at the given index
+		*/
+
+		int indexOf (std::string type);
+		/**
+            \name Index Of
+            \brief Returns the index of the given type or -1 if not found
 		*/
 
 		static const unsigned int TAG_BUFFER     = 11;

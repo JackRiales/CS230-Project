@@ -10,10 +10,12 @@
         based on the parsed input from an external sequential file.
 
     Dependencies:
+        IO Stream
         Standard IO
         STL String
         File stream
         String Stream
+        String Utilities
 */
 
 #ifndef BINARY_H
@@ -29,11 +31,11 @@
 */
 //#define _DEBUG_
 
+#include <iostream>
 #include <stdio.h>
 #include <cstring>
 #include <fstream>
-#include <sstream>
-#include <stdlib.h>
+#include "stringutils.h"
 
 class BinaryData
 {
@@ -92,18 +94,6 @@ class BinaryData
 		    \return True if successful.
 		*/
 
-		void set (std::fstream&, int);
-		/**
-		    \name Value Mutator
-		    \brief Sets the given value to the zero record
-		*/
-
-		int value (std::fstream&);
-		/**
-		    \name Value Accessor
-		    \brief Retrieves value from zero record
-		*/
-
 		std::string to_string();
 		/**
             \name To String
@@ -132,7 +122,7 @@ class BinaryData
 		// a TRUE value determines that it has been flagged for deletion.
 		bool    _del;
 
-		// Mutators
+    // Mutators
 	public:
 		void set_title  (std::string);
 		void set_artist (std::string);
@@ -143,7 +133,7 @@ class BinaryData
 		void flag       ();
 		void unflag     ();
 
-		// Accessors (read-only)
+    // Accessors (read-only)
 	public:
 		inline std::string  title() const
 		{
@@ -173,29 +163,6 @@ class BinaryData
 		{
 			return _del;
 		}
-
-		// Static methods, for my own benefit.
-	public:
-		static int stringToInt(std::string value)
-		{
-			return atoi(value.c_str());
-		}
-
-		template<typename T>
-		static std::string typeToString (T value)
-		{
-			std::ostringstream convert;
-			convert << value;
-			return convert.str();
-		}
-		/**
-		    \name Value-To-String method
-		    \brief Easily converts a numeric value (type T) to a string value.
-		    \return Value converted to an STL string.
-
-		    Had to be defined in the header, because project rules
-		    won't allow me to have an ".inl" file for implementation. No worries.
-		*/
 };
 
 #endif // BINARY_H

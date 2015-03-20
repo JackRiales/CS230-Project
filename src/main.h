@@ -4,8 +4,6 @@
 */
 
 #include <iostream>
-#include <algorithm>
-#include <cctype>
 #include "binary.h"
 #include "primary.h"
 #include "secondary.h"
@@ -30,19 +28,18 @@ bool userPrompt_bulkBuild();                                    // Prompts the u
 bool userPrompt_Confirmation(bool def, std::string message);    // Prompts the user for 'y' or 'n', and returns true or false respectively. Default will be the return for invalid input.
 bool performBulkBuild(std::string input_filename);              // Gives the first prompt and allows the user to perform the bulk build if they want.
 int  binaryMenu();                                              // Main switch that gives access to front end functions, such as adding and deleting
-bool addRecord(BinaryData *obj);
-bool changeRecord(BinaryData *obj);
-bool deleteRecord(BinaryData *obj);
-bool sellRecord (BinaryData *obj);
-void write(BinaryData obj[], PrimaryIndex& prime_index, SecondaryIndex& second_index);
-void quit();
-void help();
-void listData(BinaryData obj[]);
-void print(BinaryData *obj, PrimaryIndex prime_index, SecondaryIndex second_index);
-BinaryData recordPrompt();
-BinaryData getByTitle(BinaryData *obj);
-BinaryData getByType(BinaryData *obj);
-std::string toLowerCase(std::string str);
+bool addRecord(BinaryData *obj, PrimaryIndex prime);            // Adds a record to the array if permitted by the primary index
+bool changeRecord(BinaryData *obj);                             // Changes a record to the prompted record
+bool deleteRecord(BinaryData *obj);                             // Wipes a record from the array
+bool sellRecord (BinaryData *obj);                              // Increments record counts by the given amount and calculates "cost"
+void write(BinaryData obj[], PrimaryIndex& prime_index, SecondaryIndex& second_index); // Commits and writes the changes made in the current session to the file system
+void quit();                                                    // Exits the program
+void help();                                                    // Displays command list
+void listData(BinaryData obj[]);                                // Lists all records in memory
+void print(BinaryData *obj, PrimaryIndex prime_index, SecondaryIndex second_index); // Searches the indexes and prints a record
+BinaryData recordPrompt();                                      // Allows the user to input a new binary data object
+BinaryData getByTitle(BinaryData *obj, PrimaryIndex pi);        // Retrieves a record from the primary index
+BinaryData getByType(BinaryData *obj, PrimaryIndex pi, SecondaryIndex si); // Retrieves a record(s) from the secondary
 // =====
 
 // ======= Used for the help display

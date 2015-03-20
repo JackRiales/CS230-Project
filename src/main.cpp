@@ -61,7 +61,9 @@ bool userPrompt_bulkBuild()
 	cin  >> result;
 
 	if (cin.fail()) {
-        cout << "Unknown case. Entering default input (1).\n";
+        cin.clear();
+        cin.ignore(1024, '\n');
+        cout << "Unknown case. Entering default input (1). Please hit enter.\n";
 		return 1;
 	}
 
@@ -231,7 +233,7 @@ int binaryMenu()
 			changeRecord(objects);
 			break;
 		case 'a':
-			addRecord(objects);
+			addRecord(objects, prime_index);
 			break;
         case 'l':
             listData(objects);
@@ -250,13 +252,21 @@ int binaryMenu()
 
 // ========================================================= //
 
-bool addRecord(BinaryData *obj)
+bool addRecord(BinaryData *obj, PrimaryIndex prime)
 {
-    // Check for jumps in the array (deleted items with title == "0")
+    // Check for jumps in the array (deleted or null items with title == "0")
     for (int i = 0; i < buffer; i++) {
-        // Put the add there if it exists
+        // Put the add there if it exists.
         if (obj[i].title() == "0") {
             obj[i] = recordPrompt();
+            // Check if it exists in the primary. Check both in lower case for accuracy.
+            if (prime.title_exists(toLowerCase(obj[i].title()))) {
+                // If so, tell the user and set it back
+                cout << "Title already exists in the prime index. No add performed.\n";
+                obj[i] = *(new BinaryData);
+                return false;
+            }
+            // If it didn't exist, all is well.
             return true;
         }
     }
@@ -289,6 +299,7 @@ bool addRecord(BinaryData *obj)
 
     return true;
     #else
+    cout << "Buffer full. Cannot add.\n";
     return false;
     #endif
 }
@@ -393,27 +404,32 @@ bool sellRecord(BinaryData *obj)
     // Valid entry
     else {
         if (!obj[input].is_deleted()) {
-            int amount;
-            cout << "How many of this object are you selling?: ";
-            cin  >> amount;
-            if (amount > obj[input].count()) {
-                if (userPrompt_Confirmation(false, "You don't have that many of that item. Sell all?")) {
-                    obj[input].set_count(0);
-                    return true;
-                } else {
-                    cout << "Exiting.\n";
+            if (obj[input].count() > 0) {
+                int amount;
+                cout << "How many of this object are you selling?: ";
+                cin  >> amount;
+                if (amount > obj[input].count()) {
+                    if (userPrompt_Confirmation(false, "You don't have that many of that item. Sell all?")) {
+                        cout << "Sold " << obj[input].count() << " of item " << obj[input].title() << " for a total of $" << obj[input].price() * obj[input].count() << endl;
+                        obj[input].set_count(0);
+                        return true;
+                    } else {
+                        cout << "Exiting.\n";
+                        return false;
+                    }
+                } else if (amount <= 0) {
+                    cout << "Amount invalid. Exiting.\n";
                     return false;
+                } else {
+                    cout << "Sold " << amount << " of item " << obj[input].title() << " for a total of $" << obj[input].price() * amount << endl;
+                    obj[input].set_count(obj[input].count() - amount);
+                    return true;
                 }
-            } else if (amount <= 0) {
-                cout << "Amount invalid. Exiting.\n";
-                return false;
-            } else {
-                obj[input].set_count(obj[input].count() - amount);
-                return true;
-            }
+            } else
+                cout << "You have none of that item.\n";
         }
         else
-            cout << "Object already flagged for deletion.\n";
+            cout << "Object flagged for deletion.\n";
     }
     return true;
 }
@@ -491,13 +507,14 @@ void print(BinaryData *obj, PrimaryIndex prime_index, SecondaryIndex second_inde
         BinaryData result;
         switch (selection) {
         case 0:
-            result = getByTitle(obj);
+            result = getByTitle(obj, prime_index);
             break;
         case 1:
-            result = getByType(obj);
+            result = getByType(obj, prime_index, second_index);
             break;
         default:
             cout << "Invalid input. Returning.\n";
+            return;
         }
 
         if (result.title() != "0")
@@ -555,7 +572,7 @@ BinaryData recordPrompt()
 
 // ========================================================= //
 
-BinaryData getByTitle(BinaryData *obj)
+BinaryData getByTitle(BinaryData *obj, PrimaryIndex pi)
 {
     // Get a title
     string input;
@@ -568,23 +585,24 @@ BinaryData getByTitle(BinaryData *obj)
 
         // Return new null binary data
         return *(new BinaryData);
+    } else if (!pi.title_exists(input)) {
+        cout << "Title nonexistant.\n";
+        return *(new BinaryData);
     }
     else {
-        // Convert it to lower case
-        input = toLowerCase(input);
-
-        // Perform linear search and get it
+        /*// Perform linear search and get it
         for (int i = 0; i < buffer; i++) {
             if (toLowerCase(obj[i].title()) == input)
                 return obj[i];
-        }
+        }*/
+        return obj[ pi.indexOf(input) ];
     }
     return *(new BinaryData);
 }
 
 // ========================================================= //
 
-BinaryData getByType(BinaryData *obj)
+BinaryData getByType(BinaryData *obj, PrimaryIndex pi, SecondaryIndex si)
 {
     string input;
     cout << "Enter a type to search for: ";
@@ -597,7 +615,7 @@ BinaryData getByType(BinaryData *obj)
     }
     else {
         // How many duplicates of the type are there
-        int dupes = 0;
+        int dupes = si.duplicates_of(input);
 
         // Array of the found objects
         BinaryData found[buffer];
@@ -611,7 +629,6 @@ BinaryData getByType(BinaryData *obj)
             if (toLowerCase(obj[i].type()) == input) {
                 found[currentIndex] = obj[i];
                 currentIndex++;
-                dupes++;
             }
         }
 
@@ -621,7 +638,7 @@ BinaryData getByType(BinaryData *obj)
         else {
             // Allow them to search among the duplicates by title
             if (userPrompt_Confirmation(false, "Duplicates found. Search the duplicates by title? (n) for more options."))
-                return getByTitle(found);
+                return getByTitle(found, pi);
             else {
                 // Or just allow them to print all the duplicates and return a null bin object
                 if (userPrompt_Confirmation(false, "Print all duplicates?")) {
@@ -629,30 +646,11 @@ BinaryData getByType(BinaryData *obj)
                         // Print all valid entries in the duplicates buffer
                         if (found[i].title() != "0")
                             cout << found[i].to_string() << endl;
-                    }
-                }
-            }
-        }
+                    } // Buffer iteration
+                } // User Prompt Confirmation
+            } // Else
+        } // Else
     }
 
     return *(new BinaryData);
-}
-
-// ========================================================= //
-
-std::string toLowerCase(std::string str)
-{
-    std::string destinationString;
-
-    // Allocate the destination space
-    destinationString.resize(str.size());
-
-    // Convert the source string to lower case
-    // storing the result in destination string
-    std::transform(str.begin(),
-                    str.end(),
-                    destinationString.begin(),
-                    ::tolower);
-
-    return destinationString;
 }

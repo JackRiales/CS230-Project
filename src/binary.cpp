@@ -15,12 +15,12 @@ BinaryData::BinaryData (string title, string artist, string type, int year, int 
 	// Printing to log the creation of the object and what arguments were passed. Can never be too safe.
 	// I've defined _DEBUG_ only in the "Debug" build in my IDE.
 	// If you want to see these print on your end, uncomment line 21 in binary.h
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Constructed binary object. Args--\n\tTitle: %s\n\tArtist: %s\n\tType: %s\n",
 	        title.c_str(),
 	        artist.c_str(),
 	        type.c_str());
-#endif
+    #endif
 
 	// Copy the strings to the char arrays.
 	strcpy(_title, title.c_str());
@@ -35,16 +35,16 @@ BinaryData::~BinaryData()
 
 bool BinaryData::write (fstream& out, long position) const
 {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Writing object to position %ld.\n", position);
-#endif
+    #endif
 
 	// Error check
 	// Error check
 	if (!out) {
-#ifdef _DEBUG_
+        #ifdef _DEBUG_
 		printf ("Error: File stream is not opened!\n");
-#endif
+        #endif
 
 		return false;
 	}
@@ -57,15 +57,15 @@ bool BinaryData::write (fstream& out, long position) const
 
 bool BinaryData::read_sequential(fstream& in, long line_number)
 {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Reading sequential for object from line %ld.\n", line_number);
-#endif
+    #endif
 
 	// Error check
 	if (!in) {
-#ifdef _DEBUG_
+        #ifdef _DEBUG_
 		printf ("Error: File stream is not opened!\n");
-#endif
+        #endif
 
 		return false;
 	}
@@ -94,7 +94,7 @@ bool BinaryData::read_sequential(fstream& in, long line_number)
 		_price= stringToInt(integers[1]);
 		_count= stringToInt(integers[2]);
 
-#ifdef _DEBUG_
+        #ifdef _DEBUG_
 		printf ("Constructed binary object. Args--\n\tTitle: %s\n\tArtist: %s\n\tType: %s\n\tYear: %d\n\tPrice: %d\n\tCount: %d\n",
 		        _title,
 		        _artist,
@@ -102,31 +102,31 @@ bool BinaryData::read_sequential(fstream& in, long line_number)
 		        _year,
 		        _price,
 		        _count);
-#endif
+        #endif
 
 		// The line's been parsed successfully. Exit.
 		return true;
 	}
 
 	// For some reason, the current line could not parse. Exit.
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Warning: File was unable to be parsed! Object data has not changed.\n");
-#endif
+    #endif
 
 	return false;
 }
 
 bool BinaryData::read_binary (fstream& in, long position) const
 {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Reading object from position %ld.\n", position);
-#endif
+    #endif
 
 	// Error check
 	if (!in) {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 		printf ("Error: File stream is not opened!\n");
-#endif
+    #endif
 
 		return false;
 	}
@@ -138,26 +138,15 @@ bool BinaryData::read_binary (fstream& in, long position) const
 	return true;
 }
 
-void BinaryData::set (fstream& inout, int value)
-{
-	// TODO
-}
-
-int BinaryData::value (fstream& inout)
-{
-	// TODO
-	return -1;
-}
-
 string BinaryData::to_string()
 {
     return
         "\tTitle:\t" + string(title()) + "    " + "\n" +
         "\tArtist:\t" + string(artist()) + "    " + "\n" +
         "\tType:\t" + string(type()) + "    " + "\n" +
-        "\tYear:\t" + typeToString<int>(year()) + "    " + "\n" +
-        "\tPrice:\t" + "$" + typeToString<int>(price()) + "    " + "\n" +
-        "\tCount:\t" + typeToString(count());
+        "\tYear:\t" + intToString(year()) + "    " + "\n" +
+        "\tPrice:\t" + "$" + intToString(price()) + "    " + "\n" +
+        "\tCount:\t" + intToString(count());
 }
 
 ostream& operator<<(ostream& out, const BinaryData& obj)
@@ -175,25 +164,25 @@ ostream& operator<<(ostream& out, const BinaryData& obj)
 // Mutators //////////////////////////////////////////////////
 void BinaryData::set_title (std::string title)
 {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Changing character array from '%s' to '%s'.\n", _title, title.c_str());
-#endif // _DEBUG_
+    #endif // _DEBUG_
 	strcpy(_title, title.c_str());
 }
 
 void BinaryData::set_artist (std::string artist)
 {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Changing character array from '%s' to '%s'.\n", _artist, artist.c_str());
-#endif // _DEBUG_
+    #endif // _DEBUG_
 	strcpy(_artist, artist.c_str());
 }
 
 void BinaryData::set_type (std::string type)
 {
-#ifdef _DEBUG_
+    #ifdef _DEBUG_
 	printf ("Changing character array from '%s' to '%s'.\n", _type, type.c_str());
-#endif // _DEBUG_
+    #endif // _DEBUG_
 	strcpy(_type, type.c_str());
 }
 

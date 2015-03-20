@@ -13,12 +13,14 @@
             Standard IO
             STL String
             File stream
+        String Utilities
 */
 
 #ifndef PRIMARY_H
 #define PRIMARY_H
 
 #include "binary.h"
+#include "stringutils.h"
 
 //#define _DEBUG_
 
@@ -120,7 +122,7 @@ class PrimaryIndex
 	private:
 		struct {                                    /// Anonymous struct used to house array data
 			std::string _title;                     /// Title fields from "BinaryData" class
-			int         _tag;                       /// Positioning tag
+			int         _tag;                       /// Positioning tag; where is the value at in the binary file
 		}               _listing [LISTING_BUFFER];  /// Array with arbitrary buffer defines index
 		int             _count;                     /// How many actual entries are there?
 };
