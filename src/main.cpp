@@ -107,7 +107,7 @@ bool userPrompt_Confirmation(bool def, std::string message)
 bool performBulkBuild(std::string input_filename)
 {
 	// Create an array of data objects as large as the buffer located in the PrimaryIndex class
-	unsigned int buffer = PrimaryIndex::LISTING_BUFFER - 1;
+	//unsigned int buffer = PrimaryIndex::LISTING_BUFFER - 1;
 	BinaryData obj [buffer];
 
 	// Create the indexes
@@ -120,7 +120,7 @@ bool performBulkBuild(std::string input_filename)
 		cout << "Reading input file.\n";
 
 		// Read each line onto each object
-		for (unsigned int i = 0; i < buffer; i++) {
+		for (int i = 0; i < buffer; i++) {
 			obj[i].read_sequential(in, i);
 		}
 	} else {
@@ -137,7 +137,7 @@ bool performBulkBuild(std::string input_filename)
 		cout << "Writing binary file.\n";
 
 		// Write out the binary file
-		for (unsigned int i = 0; i < buffer; i++) {
+		for (int i = 0; i < buffer; i++) {
 			obj[i].write (out, i);
 		}
 	}
@@ -187,10 +187,13 @@ int binaryMenu()
         objects[i].read_binary(in, i);
 
     // Resize the global buffer to be only valid entries that came from the input file
+    // DYNAMIC ARRAY VERSION FEATURE
+    #ifdef _DYN_ARRAY_
     for (int i = 0; i < buffer; i++) {
         if (objects[i].title() == "0")
             buffer--;
     }
+    #endif
 
     // Regenerate the indexes
     PrimaryIndex    prime_index;
@@ -258,6 +261,7 @@ bool addRecord(BinaryData *obj)
         }
     }
 
+    #ifdef _DYN_ARRAY_
     // Increment the buffer
     buffer += 1;
 
@@ -284,6 +288,9 @@ bool addRecord(BinaryData *obj)
     }
 
     return true;
+    #else
+    return false;
+    #endif
 }
 
 // ========================================================= //
