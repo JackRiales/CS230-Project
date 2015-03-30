@@ -19,7 +19,8 @@ const std::string program_header = "University of South Alabama -- CS230 -- Prog
 bool running = true;
 
 // Binary data array buffer
-int buffer = PrimaryIndex::LISTING_BUFFER - 1;
+// Value comes from PrimaryIndex::Listing_Buffer when index is created
+int buffer;
 // =====
 
 // ===== Global main functions
@@ -40,6 +41,7 @@ void print(BinaryData *obj, PrimaryIndex prime_index, SecondaryIndex second_inde
 BinaryData recordPrompt();                                      // Allows the user to input a new binary data object
 BinaryData getByTitle(BinaryData *obj, PrimaryIndex pi);        // Retrieves a record from the primary index
 BinaryData getByType(BinaryData *obj, PrimaryIndex pi, SecondaryIndex si); // Retrieves a record(s) from the secondary
+int sequentialLineCount( std::string input_filename );          // Returns the number of lines in the given sequential file. Used for buffer determination.
 // =====
 
 // ======= Used for the help display

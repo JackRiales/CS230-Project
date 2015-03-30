@@ -8,6 +8,8 @@ using namespace std;
 
 // Constructor
 SecondaryIndex::SecondaryIndex(int count):
+    LISTING_BUFFER(5),
+    _listing(new RECORD[LISTING_BUFFER]),
 	_count (count)
 {
     #ifdef _DEBUG_
@@ -23,7 +25,8 @@ SecondaryIndex::SecondaryIndex(int count):
 
 SecondaryIndex::~SecondaryIndex()
 {
-	; // Nothing to see here... yet!
+	delete [] _listing;
+	_listing = NULL;
 }
 
 bool SecondaryIndex::set_type_at(unsigned int key, std::string type)
@@ -32,9 +35,10 @@ bool SecondaryIndex::set_type_at(unsigned int key, std::string type)
 	if (key >= LISTING_BUFFER) {
         #ifdef _DEBUG_
 		printf("Error! Given key exceeds index buffer range of primary index.\n");
+        return false;
         #endif
 
-		return false;
+		double_buffer();
 	} else {
 		// If type does not already exist, add it
 		if (!type_match(type)) {
@@ -106,7 +110,7 @@ bool SecondaryIndex::read (BinaryData objects[], unsigned int length)
 	// If length arg is 0, attempt to calculate the length using size division
 	if (length == 0) {
         #ifdef _DEBUG_
-		printf ("Length argument 0. Attempting to calculate length from array.");
+		printf ("Length argument 0. Attempting to calculate length from array.\n");
         #endif // _DEBUG_
 
 		length = sizeof(objects)/sizeof(objects[0]);
@@ -121,13 +125,14 @@ bool SecondaryIndex::read (BinaryData objects[], unsigned int length)
 		return false;
 	}
 
-	// Index exceeds buffer exception
+	// Index exceeds buffer, resize
 	else if (length >= LISTING_BUFFER) {
         #ifdef _DEBUG_
 		printf ("Error: Length of array exceeds listing buffer of PrimaryIndex class. Exiting. Length: %d\n", length);
+        return false;
         #endif // _DEBUG_
 
-		return false;
+        double_buffer();
 	}
 
     #ifdef _DEBUG_
@@ -156,7 +161,6 @@ bool SecondaryIndex::type_match(std::string type)
 		if (toLowerCase(_listing[i]._type) == toLowerCase(type))
 			return true;
 	}
-	printf("Type not found.\n");
 	return false;
 }
 
@@ -197,3 +201,21 @@ int SecondaryIndex::indexOf(std::string type) {
     }
     return -1;
 }
+
+void SecondaryIndex::double_buffer()
+{
+    #ifdef _DEBUG_
+    printf ("Doubling secondary index listing buffer (new max value %d)\n", LISTING_BUFFER*2);
+    #endif
+
+    // Increment Listing buffer
+    LISTING_BUFFER *= 2;
+    RECORD *_new = new RECORD[LISTING_BUFFER];
+    for (int i = 0; i < (LISTING_BUFFER/2) - 1; i++)
+        _new[i] = _listing[i];
+
+    // Point over to the new array
+    delete [] _listing;
+    _listing = _new;
+}
+

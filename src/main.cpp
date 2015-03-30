@@ -108,13 +108,12 @@ bool userPrompt_Confirmation(bool def, std::string message)
 
 bool performBulkBuild(std::string input_filename)
 {
-	// Create an array of data objects as large as the buffer located in the PrimaryIndex class
-	//unsigned int buffer = PrimaryIndex::LISTING_BUFFER - 1;
-	BinaryData obj [buffer];
+	// Get actual sequential line buffer here
+	buffer = sequentialLineCount(input_filename);
+	printf("Buffer calculated to be %d\n", buffer);
 
-	// Create the indexes
-	PrimaryIndex prime_index;
-	SecondaryIndex second_index;
+	// Create an array of data objects as large as the buffer located in the PrimaryIndex class
+	BinaryData obj [buffer];
 
 	// Open the stream to the input file
 	std::fstream in (input_filename.c_str(), ios::in);
@@ -147,6 +146,19 @@ bool performBulkBuild(std::string input_filename)
 	// Close output
 	out.close();
 
+	// Create the indexes
+	PrimaryIndex prime_index;
+	SecondaryIndex second_index;
+
+	// Keep the object buffers consistent with the index buffers
+	cout << "Checking buffers...\n";
+	if (prime_index.LISTING_BUFFER <= buffer) {
+        prime_index.double_buffer();
+	}
+	if (second_index.LISTING_BUFFER <= buffer) {
+        second_index.double_buffer();
+	}
+
 	// Read in the indexes from the object array
 	cout << "Reading objects for index creation.\n";
 	prime_index.read(obj, buffer);
@@ -178,28 +190,41 @@ bool performBulkBuild(std::string input_filename)
 
 int binaryMenu()
 {
+    // Get buffer value back by calculating the size of the binary file divided by the size
+    // of the binary data object
+    fstream is (bin_filename, ios::in | ios::binary);
+    is.seekg (0, is.end);
+    buffer = is.tellg()/sizeof(BinaryData);
+
+    // Set it back to the beginning and close the file
+    is.seekg (0, is.beg);
+    is.close();
+
+    #ifdef _DEBUG_
+    printf("Buffer reclaimed from binary file: Size %d\n", buffer);
+    #endif
+
+    // Initialization
+    PrimaryIndex    prime_index;
+    SecondaryIndex  second_index;
+    BinaryData *objects = new BinaryData[buffer];
+
     // Reset cin, in case the doofus at the keyboard put in a char for the bulk build/menu input.
     // Ignore until new line is read. Just so no infinite loops happen...
     cin.ignore(numeric_limits<streamsize>::max(),'\n');
 
     // Read back in the binary file
     fstream in (bin_filename, ios::in | ios::binary);
-    BinaryData *objects = new BinaryData[buffer];
     for (int i = 0; i < buffer; i++)
         objects[i].read_binary(in, i);
 
     // Resize the global buffer to be only valid entries that came from the input file
-    // DYNAMIC ARRAY VERSION FEATURE
-    #ifdef _DYN_ARRAY_
     for (int i = 0; i < buffer; i++) {
         if (objects[i].title() == "0")
             buffer--;
     }
-    #endif
 
     // Regenerate the indexes
-    PrimaryIndex    prime_index;
-    SecondaryIndex  second_index;
     prime_index.read(objects, buffer);
     second_index.read(objects, buffer);
 
@@ -271,37 +296,29 @@ bool addRecord(BinaryData *obj, PrimaryIndex prime)
         }
     }
 
-    #ifdef _DYN_ARRAY_
     // Increment the buffer
     buffer += 1;
 
-    // Buffer exceeds index range exception
-    if (buffer >= PrimaryIndex::LISTING_BUFFER) {
-        cout << "Buffer exceeds Primary Index listing buffer. Cannot add.\n";
-        buffer -= 1;
-        return false;
+    // Buffer exceeds index range
+    if (buffer >= prime.LISTING_BUFFER) {
+        // Extend index buffer
+        prime.double_buffer();
     }
 
     // Buffer can increase, copy over data to a new array
-    else {
-        // Create new array of a new buffer size and copy over
-        BinaryData *_new = new BinaryData[buffer];
-        for (int i = 0; i < buffer - 1; i++)
-            _new[i] = obj[i];
+    // Create new array of a new buffer size and copy over
+    BinaryData *_new = new BinaryData[buffer];
+    for (int i = 0; i < buffer - 1; i++)
+        _new[i] = obj[i];
 
-        // Prompt for a new entry at the end of new array
-        _new[buffer-1] = recordPrompt();
+    // Prompt for a new entry at the end of new array
+    _new[buffer-1] = recordPrompt();
 
-        // Point over to the new array
-        delete [] obj;
-        obj = _new;
-    }
+    // Point over to the new array
+    delete [] obj;
+    obj = _new;
 
     return true;
-    #else
-    cout << "Buffer full. Cannot add.\n";
-    return false;
-    #endif
 }
 
 // ========================================================= //
@@ -653,4 +670,17 @@ BinaryData getByType(BinaryData *obj, PrimaryIndex pi, SecondaryIndex si)
     }
 
     return *(new BinaryData);
+}
+
+// ========================================================= //
+
+int sequentialLineCount( std::string input_filename )
+{
+    int number_of_lines = 0;
+    std::string line;
+    std::ifstream in(input_filename.c_str());
+    while (std::getline(in, line))
+        ++number_of_lines;
+    in.close();
+    return number_of_lines;
 }

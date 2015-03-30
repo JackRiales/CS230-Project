@@ -124,9 +124,9 @@ bool BinaryData::read_binary (fstream& in, long position) const
 
 	// Error check
 	if (!in) {
-    #ifdef _DEBUG_
+        #ifdef _DEBUG_
 		printf ("Error: File stream is not opened!\n");
-    #endif
+        #endif
 
 		return false;
 	}

@@ -99,23 +99,29 @@ class SecondaryIndex
             \brief Returns the index of the given type or -1 if not found
 		*/
 
+		void double_buffer ();
+		/**
+            \name Double Buffer
+            \brief Doubles the length of the dynamic array
+		*/
+
 		static const unsigned int TAG_BUFFER     = 11;
 		/**
 		    \name Tag Buffer
 		    \brief How many possible duplicates of a type can be held in one listing index?
 		*/
 
-		static const unsigned int LISTING_BUFFER = 25;
+		unsigned int LISTING_BUFFER;
 		/**
 		    \name Listing Array Buffer Length
 		    \brief Arbitrary array length of 25, held here for more readability when iterating.
 		*/
 
 	private:
-		struct {                                    /// Anonymous struct used to house index
+		struct RECORD {                             /// struct used to house index
 			std::string _type;                      /// Type name from the "BinaryData" class
 			int         _duplicates;                /// How many duplicates of the type there are
-		}               _listing[LISTING_BUFFER];   /// Array with arbitrary buffer defines index
+		}               *_listing;                  /// Dynamic array pointer
 		int             _count;                     /// How many actual entries are there?
 };
 

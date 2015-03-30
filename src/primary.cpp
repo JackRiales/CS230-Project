@@ -8,6 +8,8 @@ using namespace std;
 
 // Constructor
 PrimaryIndex::PrimaryIndex(int count):
+    LISTING_BUFFER(5),
+    _listing(new RECORD[LISTING_BUFFER]),
 	_count (count)
 {
 #ifdef _DEBUG_
@@ -24,7 +26,8 @@ PrimaryIndex::PrimaryIndex(int count):
 // Destructor
 PrimaryIndex::~PrimaryIndex()
 {
-	; // Nothing to see here... yet!
+	delete [] _listing;
+	_listing = NULL;
 }
 
 bool PrimaryIndex::set_title_at(unsigned int key, std::string title)
@@ -33,24 +36,26 @@ bool PrimaryIndex::set_title_at(unsigned int key, std::string title)
 	if (key >= LISTING_BUFFER) {
         #ifdef _DEBUG_
 		printf("Error! Given key exceeds index buffer range of primary index.\n");
+		return false;
+		#elifdef _DYN_ARRAY_
+		printf("Resizing primary index buffer to %d\n", LISTING_BUFFER*2);
         #endif
 
-		return false;
-	} else {
-		if (!title_exists(title)) {
-            #ifdef _DEBUG_
-			printf("Setting title at given key %d to %s\n", key, title.c_str());
-            #endif
-
-			_listing[key]._title = title;
-		} else {
-            #ifdef _DEBUG_
-			printf ("Title %s already exists in the primary index. Index found was: %d\n", title.c_str(), indexOf(title));
-            #endif
-
-			return false;
-		}
+		double_buffer();
 	}
+    if (!title_exists(title)) {
+        #ifdef _DEBUG_
+        printf("Setting title at given key %d to %s\n", key, title.c_str());
+        #endif
+
+        _listing[key]._title = title;
+    } else {
+        #ifdef _DEBUG_
+        printf ("Title %s already exists in the primary index. Index found was: %d\n", title.c_str(), indexOf(title));
+        #endif
+
+        return false;
+    }
 	return true;
 }
 
@@ -120,15 +125,21 @@ bool PrimaryIndex::read (BinaryData objects[], unsigned int length)
     #endif // _DEBUG_
 
 	// Get the size of the array
-	if (length == 0)
-		length = sizeof(objects)/sizeof(objects[0]);
+	if (length == 0) {
+        #ifdef _DEBUG_
+		printf ("Length argument 0. Attempting to calculate length from array.\n");
+        #endif // _DEBUG_
+
+        length = sizeof(objects)/sizeof(objects[0]);
+	}
 
 	if (length >= LISTING_BUFFER) {
         #ifdef _DEBUG_
 		printf ("Error: Length of array exceeds listing buffer of PrimaryIndex class. Exiting. Length: %d\n", length);
+		return false;
         #endif // _DEBUG_
 
-		return false;
+		double_buffer();
 	} else if (length == 0) {
         #ifdef _DEBUG_
 		printf ("Length is zero! Exiting.\n");
@@ -198,4 +209,21 @@ bool PrimaryIndex::title_exists(std::string title)
 
 	// Otherwise, naturally, there is
 	else return true;
+}
+
+void PrimaryIndex::double_buffer()
+{
+    #ifdef _DEBUG_
+    printf ("Doubling primary index listing buffer (new max value %d)\n", LISTING_BUFFER*2);
+    #endif
+
+    // Increment Listing buffer
+    LISTING_BUFFER *= 2;
+    RECORD *_new = new RECORD[LISTING_BUFFER];
+    for (int i = 0; i < (LISTING_BUFFER/2) - 1; i++)
+        _new[i] = _listing[i];
+
+    // Point over to the new array
+    delete [] _listing;
+    _listing = _new;
 }

@@ -113,17 +113,23 @@ class PrimaryIndex
 		    Used as a slightly easier to write way of determining whether or not to write a title.
 		*/
 
-		static const unsigned int LISTING_BUFFER = 25;
+		void double_buffer ();
+		/**
+            \name Double Buffer
+            \brief Doubles the length of the dynamic array
+		*/
+
+		unsigned int LISTING_BUFFER;
 		/**
 		    \name Listing Array Buffer Length
 		    \brief Arbitrary array length of 25, held here for more readability when iterating.
 		*/
 
 	private:
-		struct {                                    /// Anonymous struct used to house array data
+		struct RECORD {                             /// struct used to house array data
 			std::string _title;                     /// Title fields from "BinaryData" class
 			int         _tag;                       /// Positioning tag; where is the value at in the binary file
-		}               _listing [LISTING_BUFFER];  /// Array with arbitrary buffer defines index
+		}               *_listing;                  /// Dynamic array pointer
 		int             _count;                     /// How many actual entries are there?
 };
 
